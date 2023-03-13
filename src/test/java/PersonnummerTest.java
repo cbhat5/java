@@ -104,6 +104,50 @@ public class PersonnummerTest {
     }
 
     @ParameterizedTest
+    @MethodSource("DataProvider#getDate")
+    public void testDate(PersonnummerData ssn) {
+    	List<Personnummer> data = new ArrayList<>();
+		try {
+			data.add(new Personnummer(ssn.longFormat, new Options()));
+			data.add(new Personnummer(ssn.shortFormat, new Options()));
+			data.add(new Personnummer(ssn.separatedFormat, new Options()));
+
+			data.forEach(entry -> {
+
+				assertDoesNotThrow(() -> entry.getDate());
+				LocalDateTime dateTime = entry.getDate();
+				String expectedYear = entry.getFullYear();
+				String expectedMonth = entry.getMonth();
+				if(expectedMonth.charAt(0)=='0')
+					expectedMonth = expectedMonth.substring(1);
+                int day = Integer.parseInt(entry.getDay());
+                if (day > 60) {
+                    day -= 60;
+                }
+
+				String expectedDate = String.valueOf(day);
+				if(expectedDate.charAt(0)=='0')
+					expectedDate = expectedDate.substring(1);
+//				Integer expected = Integer.valueOf(ssn.longFormat.substring(0,4));
+				String actualYear = String.valueOf(dateTime.getYear());
+				String actualMonth = String.valueOf(dateTime.getMonth().getValue());
+				String actualDate = String.valueOf(dateTime.getDayOfMonth());
+
+				assertEquals(expectedYear, actualYear); //, "expected year = " + expectedYear + "\n" + "Actual year = " + actualYear);
+				assertEquals(expectedMonth, actualMonth);//, "expected month = " + expectedMonth + "\n" + "Actual month = " + actualMonth);
+				assertEquals(expectedDate, actualDate); //, "expected date = " + expectedDate + "\n" + "Actual date = " + actualDate);
+
+			});
+
+
+
+		} catch (PersonnummerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+
+    @ParameterizedTest
     @MethodSource({"DataProvider#getValidCoordinationNumbers", "DataProvider#getValidPersonnummer"})
     public void testParseCoord(PersonnummerData ssn) {
         assertDoesNotThrow(() -> Personnummer.parse(ssn.longFormat, new Options(true)));
